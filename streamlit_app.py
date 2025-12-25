@@ -727,12 +727,16 @@ elif st.session_state.step == 4:
                     translator = IDMLTranslator(target_lang=st.session_state.get('target_lang', 'ar'))
                     translator.translation_pairs = translations_with_ids
                     
-                    # Get IDML path and validate it's a string
+                    # Get IDML path and convert to absolute path
                     idml_path = st.session_state.output_paths.get('idml')
                     if not isinstance(idml_path, str):
                         st.error(f"Invalid IDML path type: {type(idml_path)}. Expected string.")
                         st.code(f"output_paths: {st.session_state.output_paths}")
                         raise TypeError("IDML path must be a string")
+                    
+                    # Convert to absolute path if it's relative
+                    if not os.path.isabs(idml_path):
+                        idml_path = os.path.abspath(idml_path)
                     
                     # Apply edits to IDML
                     edited_idml = translator.apply_translation_edits(
