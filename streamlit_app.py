@@ -709,7 +709,34 @@ elif st.session_state.step == 4:
         # === DOWNLOAD SECTION ===
         st.markdown("---")
         st.markdown("### 📥 Download Edited Files")
-        st.success("✅ Your edits are saved! Download your files below:")
+        # Apply Edits Button
+        if st.button("🔄 Apply All Edits to Files", type="primary", use_container_width=True, key="apply_edits_step4"):
+            with st.spinner("Applying your edits to files..."):
+                try:
+                    from translator_core import IDMLTranslator
+                    from word_generator import create_word_document
+                    
+                    translator = IDMLTranslator(target_lang=st.session_state.get('target_lang', 'ar'))
+                    translator.translation_pairs = st.session_state.translations
+                    
+                    # Apply edits to IDML
+                    edited_idml = translator.apply_translation_edits(
+                        st.session_state.translations,
+                        st.session_state.output_paths['idml']
+                    )
+                    st.session_state.output_paths['idml'] = edited_idml
+                    
+                    # Regenerate Word
+                    edited_word = create_word_document(st.session_state.translations, edited_idml)
+                    st.session_state.output_paths['word'] = edited_word
+                    
+                    st.success("✅ All edits applied to files!")
+                    time.sleep(1)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error applying edits: {str(e)}")
+        
+        st.info("💡 Click 'Apply All Edits' above to update files with your changes, then download below.")
         
         col1, col2 = st.columns(2)
         
