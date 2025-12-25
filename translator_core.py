@@ -399,7 +399,13 @@ class IDMLTranslator:
             tree.write(story_path, encoding='UTF-8', xml_declaration=True, pretty_print=False)
         
         # Reconstruct the IDML
-        edited_idml_path = output_idml_path.replace('.idml', '_edited.idml')
+        # Convert to string and ensure proper path handling
+        output_path_str = str(output_idml_path)
+        if output_path_str.endswith('.idml'):
+            edited_idml_path = output_path_str.replace('.idml', '_edited.idml')
+        else:
+            edited_idml_path = output_path_str + '_edited.idml'
+        
         with zipfile.ZipFile(edited_idml_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root_dir, dirs, files in os.walk(temp_edit_dir):
                 for file in files:
