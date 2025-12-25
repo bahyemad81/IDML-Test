@@ -724,6 +724,11 @@ elif st.session_state.step == 4:
                             trans_copy['id'] = idx + 1
                         translations_with_ids.append(trans_copy)
                     
+                    # DEBUG: Show what fields we have
+                    if translations_with_ids:
+                        st.write("DEBUG - First translation fields:", list(translations_with_ids[0].keys()))
+                        st.write("DEBUG - First translation:", translations_with_ids[0])
+                    
                     translator = IDMLTranslator(target_lang=st.session_state.get('target_lang', 'ar'))
                     translator.translation_pairs = translations_with_ids
                     
