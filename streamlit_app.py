@@ -713,70 +713,78 @@ elif st.session_state.step == 4:
         if st.button("🔄 Apply All Edits to Files", type="primary", use_container_width=True, key="apply_edits_step4"):
             with st.spinner("Applying your edits to files..."):
                 try:
-                    from translator_core import IDMLTranslator
-                    from word_generator import create_word_document
-                    
-                    # Add IDs to translations if missing
-                    translations_with_ids = []
-                    for idx, t in enumerate(st.session_state.translations):
-                        trans_copy = t.copy()
-                        if 'id' not in trans_copy:
-                            trans_copy['id'] = idx + 1
-                        translations_with_ids.append(trans_copy)
-                    
-                    # DEBUG: Show what fields we have
-                    if translations_with_ids:
-                        st.write("DEBUG - First translation fields:", list(translations_with_ids[0].keys()))
-                        st.write("DEBUG - First translation:", translations_with_ids[0])
-                    
-                    translator = IDMLTranslator(target_lang=st.session_state.get('target_lang', 'ar'))
-                    translator.translation_pairs = translations_with_ids
-                    
-                    # Get IDML path and convert to absolute path
-                    idml_path = st.session_state.output_paths.get('idml')
-                    if not isinstance(idml_path, str):
-                        st.error(f"Invalid IDML path type: {type(idml_path)}. Expected string.")
-                        st.code(f"output_paths: {st.session_state.output_paths}")
-                        raise TypeError("IDML path must be a string")
-                    
-                    # Convert to absolute path if it's relative
-                    if not os.path.isabs(idml_path):
-                        idml_path = os.path.abspath(idml_path)
-                    
-                    # Apply edits to IDML
-                    edited_idml = translator.apply_translation_edits(
-                        translations_with_ids,
-                        idml_path
-                    )
-                    st.session_state.output_paths['idml'] = edited_idml
-                    
-                    # Regenerate Word document from edited IDML
-                    # First, extract the edited IDML to get temp directory
                     import tempfile
                     import zipfile
-                    temp_dir = tempfile.mkdtemp()
-                    
-                    # DEBUG: Verify temp_dir is a string
-                    st.write("DEBUG - temp_dir type:", type(temp_dir))
-                    st.write("DEBUG - temp_dir value:", temp_dir)
-                    
-                    with zipfile.ZipFile(edited_idml, 'r') as zip_ref:
-                        zip_ref.extractall(temp_dir)
-                    
-                    # Generate Word document output path
-                    word_output_path = edited_idml.replace('.idml', '.docx').replace('_edited', '_edited')
-                    
-                    # DEBUG: Verify word_output_path
-                    st.write("DEBUG - word_output_path:", word_output_path)
-                    
-                    # Create Word document from extracted IDML
+                    import shutil
+                    from lxml import etree
                     from word_generator import create_word_document
-                    edited_word = create_word_document(temp_dir, word_output_path)
+                    
+                    # Get original IDML path and convert to absolute
+                    original_idml = st.session_state.output_paths.get('idml')
+                    if not os.path.isabs(original_idml):
+                        original_idml = os.path.abspath(original_idml)
+                    
+                    # Create temp directory for editing
+                    edit_temp_dir = tempfile.mkdtemp()
+                    
+                    # Extract IDML
+                    with zipfile.ZipFile(original_idml, 'r') as zip_ref:
+                        zip_ref.extractall(edit_temp_dir)
+                    
+                    # Apply edits to Story XML files
+                    stories_dir = os.path.join(edit_temp_dir, 'Stories')
+                    
+                    for translation in st.session_state.translations:
+                        # Skip if no story_file or element_index
+                        if 'story_file' not in translation or 'element_index' not in translation:
+                            continue
+                        
+                        story_file = translation['story_file']
+                        element_idx = translation['element_index']
+                        new_text = translation['translated']
+                        
+                        # Parse and update the story file
+                        story_path = os.path.join(stories_dir, story_file)
+                        if not os.path.exists(story_path):
+                            continue
+                        
+                        parser = etree.XMLParser(remove_blank_text=False)
+                        tree = etree.parse(story_path, parser)
+                        root = tree.getroot()
+                        
+                        # Update the specific Content element
+                        for idx, content in enumerate(root.iter('Content')):
+                            if idx == element_idx and content.text:
+                                content.text = new_text
+                                break
+                        
+                        # Write back
+                        tree.write(story_path, encoding='UTF-8', xml_declaration=True, pretty_print=False)
+                    
+                    # Reconstruct edited IDML
+                    edited_idml_path = original_idml.replace('.idml', '_edited.idml')
+                    with zipfile.ZipFile(edited_idml_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                        for root_dir, dirs, files in os.walk(edit_temp_dir):
+                            for file in files:
+                                file_path = os.path.join(root_dir, file)
+                                arcname = os.path.relpath(file_path, edit_temp_dir)
+                                zipf.write(file_path, arcname)
+                    
+                    # Update session state with edited IDML
+                    st.session_state.output_paths['idml'] = edited_idml_path
+                    
+                    # Generate Word document from edited IDML
+                    word_output_path = edited_idml_path.replace('.idml', '.docx')
+                    edited_word = create_word_document(edit_temp_dir, word_output_path)
                     st.session_state.output_paths['word'] = edited_word
+                    
+                    # Clean up temp directory
+                    shutil.rmtree(edit_temp_dir)
                     
                     st.success("✅ All edits applied to files!")
                     time.sleep(1)
                     st.rerun()
+                    
                 except Exception as e:
                     st.error(f"Error applying edits: {str(e)}")
                     import traceback
