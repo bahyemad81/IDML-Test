@@ -745,8 +745,20 @@ elif st.session_state.step == 4:
                     )
                     st.session_state.output_paths['idml'] = edited_idml
                     
-                    # Regenerate Word
-                    edited_word = create_word_document(translations_with_ids, edited_idml)
+                    # Regenerate Word document from edited IDML
+                    # First, extract the edited IDML to get temp directory
+                    import tempfile
+                    import zipfile
+                    temp_dir = tempfile.mkdtemp()
+                    with zipfile.ZipFile(edited_idml, 'r') as zip_ref:
+                        zip_ref.extractall(temp_dir)
+                    
+                    # Generate Word document output path
+                    word_output_path = edited_idml.replace('.idml', '.docx').replace('_edited', '_edited')
+                    
+                    # Create Word document from extracted IDML
+                    from word_generator import create_word_document
+                    edited_word = create_word_document(temp_dir, word_output_path)
                     st.session_state.output_paths['word'] = edited_word
                     
                     st.success("✅ All edits applied to files!")
