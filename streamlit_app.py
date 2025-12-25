@@ -716,18 +716,26 @@ elif st.session_state.step == 4:
                     from translator_core import IDMLTranslator
                     from word_generator import create_word_document
                     
+                    # Add IDs to translations if missing
+                    translations_with_ids = []
+                    for idx, t in enumerate(st.session_state.translations):
+                        trans_copy = t.copy()
+                        if 'id' not in trans_copy:
+                            trans_copy['id'] = idx + 1
+                        translations_with_ids.append(trans_copy)
+                    
                     translator = IDMLTranslator(target_lang=st.session_state.get('target_lang', 'ar'))
-                    translator.translation_pairs = st.session_state.translations
+                    translator.translation_pairs = translations_with_ids
                     
                     # Apply edits to IDML
                     edited_idml = translator.apply_translation_edits(
-                        st.session_state.translations,
+                        translations_with_ids,
                         st.session_state.output_paths['idml']
                     )
                     st.session_state.output_paths['idml'] = edited_idml
                     
                     # Regenerate Word
-                    edited_word = create_word_document(st.session_state.translations, edited_idml)
+                    edited_word = create_word_document(translations_with_ids, edited_idml)
                     st.session_state.output_paths['word'] = edited_word
                     
                     st.success("✅ All edits applied to files!")
@@ -735,6 +743,8 @@ elif st.session_state.step == 4:
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error applying edits: {str(e)}")
+                    import traceback
+                    st.code(traceback.format_exc())
         
         st.info("💡 Click 'Apply All Edits' above to update files with your changes, then download below.")
         
