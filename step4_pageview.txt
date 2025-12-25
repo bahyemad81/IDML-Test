@@ -1,0 +1,70 @@
+# STEP 4: Edit and Enhance Text - PAGE VIEW
+elif st.session_state.step == 4:
+    show_stepper(4)
+    
+    st.markdown('<div class="content-card">', unsafe_allow_html=True)
+    
+    st.markdown("### ✏️ Review & Edit Translations")
+    
+    if not st.session_state.translations:
+        st.warning("No translations available to edit.")
+        if st.button("← Back"):
+            st.session_state.step = 3
+            st.rerun()
+    else:
+        total_segments = len(st.session_state.translations)
+        st.info(f"📄 **{total_segments} text segments** to review - All displayed below")
+        
+        st.markdown("---")
+        
+        # Display ALL translations in scrollable two-column layout
+        for idx, translation in enumerate(st.session_state.translations):
+            # Segment header
+            st.markdown(f"**📝 Segment {idx + 1}**")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Original:**")
+                st.text_area(
+                    f"Original {idx}",
+                    value=translation['original'],
+                    height=100,
+                    key=f"orig_{idx}",
+                    label_visibility="collapsed",
+                    disabled=True
+                )
+            
+            with col2:
+                st.markdown("**Translation:**")
+                edited_text = st.text_area(
+                    f"Translation {idx}",
+                    value=translation['translated'],
+                    height=100,
+                    key=f"trans_{idx}",
+                    label_visibility="collapsed"
+                )
+                
+                # Auto-save changes to session state
+                if edited_text != translation['translated']:
+                    st.session_state.translations[idx]['translated'] = edited_text
+            
+            st.markdown("---")
+        
+        # Action buttons at bottom
+        st.markdown("<br>", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("← Back to Download", use_container_width=True):
+                st.session_state.step = 3
+                st.rerun()
+        
+        with col2:
+            if st.button("💾 Save All & Download →", type="primary", use_container_width=True):
+                st.success("✅ All changes saved!")
+                time.sleep(0.5)
+                st.session_state.step = 3
+                st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)

@@ -1,0 +1,97 @@
+    # Translation Report - Show statistics after completion
+    if st.session_state.translation_complete and st.session_state.output_paths:
+        st.success("🎉 **Translation completed successfully!**")
+        
+        # Translation Report Card
+        st.markdown("### 📊 Translation Report")
+        
+        # Calculate statistics
+        total_segments = len(st.session_state.translations)
+        total_words = sum(len(t['original'].split()) for t in st.session_state.translations)
+        total_chars = sum(len(t['original']) for t in st.session_state.translations)
+        unique_segments = len(set(t['original'] for t in st.session_state.translations))
+        
+        # File info section
+        file_name = st.session_state.uploaded_file.name if st.session_state.uploaded_file else "Document"
+        st.markdown(f"""
+        <div style="background: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div>
+                    <h4 style="margin: 0; color: #1f2937;">📄 {file_name}</h4>
+                    <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Adobe InDesign IDML</p>
+                </div>
+                <div style="background: #3b82f6; color: white; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">
+                    ✓ Completed
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Statistics grid
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <div style="font-size: 24px; font-weight: 700; color: #3b82f6;">{total_segments}</div>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">Text segments</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <div style="font-size: 24px; font-weight: 700; color: #10b981;">{unique_segments}</div>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">Unique segments</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <div style="font-size: 24px; font-weight: 700; color: #f59e0b;">{total_words}</div>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">Words</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <div style="font-size: 24px; font-weight: 700; color: #6366f1;">{total_chars}</div>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">Characters</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Language info
+        st.markdown("<br>", unsafe_allow_html=True)
+        lang_name = "Arabic (العربية)" if st.session_state.target_lang == 'ar' else "English"
+        lang_flag = "🇪🇬" if st.session_state.target_lang == 'ar' else "🇬🇧"
+        
+        st.markdown(f"""
+        <div style="background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">{lang_flag}</div>
+            <div>
+                <div style="font-weight: 600; color: #1f2937;">Target Language</div>
+                <div style="color: #6b7280; font-size: 14px;">{lang_name}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Next steps section
+        st.markdown("### 🎯 Next Steps")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("✏️ Review & Edit Translations", type="primary", use_container_width=True):
+                st.session_state.step = 4  # Go to editing page
+                st.rerun()
+        
+        with col2:
+            if st.button("⬇️ Skip to Download", use_container_width=True):
+                pass  # Stay on this page to show downloads
+        
+        # Show download section
+        st.markdown("---")

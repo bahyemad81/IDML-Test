@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDML Arabic Translator - Professional Translation Tool</title>
+    <meta name="description" content="Translate Adobe InDesign IDML files from English to Arabic with proper RTL formatting and Arabic typography support.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="8" fill="url(#gradient)"/>
+                    <path d="M12 20L18 14L24 20L18 26L12 20Z" fill="white" opacity="0.9"/>
+                    <path d="M18 14L24 20L28 16L22 10L18 14Z" fill="white" opacity="0.6"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#667eea"/>
+                            <stop offset="100%" stop-color="#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>IDML Arabic Translator</h1>
+            </div>
+            <p class="subtitle">Professional English to Arabic translation for Adobe InDesign files</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- API Key Section (Optional) -->
+            <div class="card api-key-section" style="display: none;">
+                <label for="apiKey" class="input-label">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    API Key (Optional - Using Free Translation)
+                </label>
+                <input 
+                    type="password" 
+                    id="apiKey" 
+                    class="input-field" 
+                    placeholder="AIza..." 
+                    autocomplete="off"
+                >
+                <p class="input-hint">Your API key is never stored and only used for translation</p>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="card upload-section">
+                <div class="dropzone" id="dropzone">
+                    <input type="file" id="fileInput" accept=".idml" hidden>
+                    <div class="dropzone-content">
+                        <svg class="upload-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <h3>Drop your IDML file here</h3>
+                        <p>or <span class="browse-link">browse files</span></p>
+                        <p class="file-info">Maximum file size: 50MB</p>
+                    </div>
+                    <div class="file-preview" id="filePreview" style="display: none;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                            <polyline points="13 2 13 9 20 9"></polyline>
+                        </svg>
+                        <div class="file-details">
+                            <p class="file-name" id="fileName"></p>
+                            <p class="file-size" id="fileSize"></p>
+                        </div>
+                        <button class="remove-file" id="removeFile">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="card progress-section" id="progressSection" style="display: none;">
+                <div class="progress-header">
+                    <span class="progress-label" id="progressLabel">Processing...</span>
+                    <span class="progress-percentage" id="progressPercentage">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- Message Section -->
+            <div class="message" id="message" style="display: none;"></div>
+
+            <!-- Action Button -->
+            <button class="btn-primary" id="translateBtn" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 16v-4"></path>
+                    <path d="M12 8h.01"></path>
+                </svg>
+                <span>Translate to Arabic</span>
+            </button>
+
+            <!-- Download Button -->
+            <a class="btn-download" id="downloadBtn" style="display: none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Download Translated File</span>
+            </a>
+        </main>
+
+        <!-- Features Section -->
+        <section class="features">
+            <div class="feature">
+                <div class="feature-icon">🌍</div>
+                <h3>World-Ready Composer</h3>
+                <p>Applies Adobe's World-Ready Paragraph Composer for proper Arabic letter joining</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">➡️</div>
+                <h3>RTL Formatting</h3>
+                <p>Automatically sets right-to-left text direction and alignment</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔤</div>
+                <h3>Font Mapping</h3>
+                <p>Maps English fonts to Arabic-compatible alternatives to prevent rendering issues</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>AI-Powered</h3>
+                <p>Uses Google Gemini for professional, context-aware translation</p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with Flask, OpenAI API, and modern web technologies</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

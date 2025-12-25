@@ -1,0 +1,11 @@
+=== Translation Test Results ===
+
+Test 1: Arabic to English
+Original (AR): مصر هي واحدة من أقدم دول العالم
+Translated (EN): Egypt is one of the oldest countries in the world
+Success: True
+
+Test 2: English to Arabic
+Original (EN): Egypt is one of the oldest countries in the world
+Translated (AR): مصر من أقدم الدول في العالم
+Success: True
