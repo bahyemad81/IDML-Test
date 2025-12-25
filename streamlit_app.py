@@ -122,6 +122,9 @@ st.markdown("""
         color: #6b7280;
         font-weight: 500;
         transition: color 0.3s;
+        text-align: center;
+        max-width: 120px;
+        margin: 0 auto;
     }
     
     .step-item.active .step-label {
@@ -575,10 +578,15 @@ elif st.session_state.step == 2:
                 st.rerun()
         
         with col2:
-            if st.button("⬇️ Skip to Download", use_container_width=True):
-                pass  # Stay on this page to show downloads
+            if st.button("🔄 Translate Another File", use_container_width=True, key="translate_another_top"):
+                st.session_state.step = 1
+                st.session_state.translation_complete = False
+                st.session_state.uploaded_file = None
+                st.session_state.output_paths = None
+                st.session_state.translations = []
+                st.rerun()
         
-        # Show download section if user chose to skip editing
+        # Show download section
         st.markdown("---")
         st.markdown("### 📥 Download Your Files")
         
@@ -605,7 +613,7 @@ elif st.session_state.step == 2:
                 )
         
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("🔄 Translate Another File", use_container_width=True):
+        if st.button("🔄 Translate Another File", use_container_width=True, key="translate_another_bottom"):
             st.session_state.step = 1
             st.session_state.translation_complete = False
             st.session_state.uploaded_file = None
@@ -676,16 +684,76 @@ elif st.session_state.step == 4:
         
         st.markdown("---")
         
+        # === TRANSLATION STATISTICS ===
+        st.markdown("### 📊 Translation Statistics")
+        
+        total_segments = len(st.session_state.translations)
+        total_original_words = sum(len(t['original'].split()) for t in st.session_state.translations)
+        total_translated_words = sum(len(t['translated'].split()) for t in st.session_state.translations)
+        total_translated_chars = sum(len(t['translated']) for t in st.session_state.translations)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Segments", total_segments)
+        
+        with col2:
+            st.metric("Original Words", total_original_words)
+        
+        with col3:
+            st.metric("Translated Words", total_translated_words)
+        
+        with col4:
+            st.metric("Characters", total_translated_chars)
+        
+        # === DOWNLOAD SECTION ===
+        st.markdown("---")
+        st.markdown("### 📥 Download Edited Files")
+        st.success("✅ Your edits are saved! Download your files below:")
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button("← Back"):
+            with open(st.session_state.output_paths['idml'], 'rb') as f:
+                st.download_button(
+                    label="📄 Download IDML File",
+                    data=f.read(),
+                    file_name=Path(st.session_state.output_paths['idml']).name,
+                    mime="application/octet-stream",
+                    use_container_width=True,
+                    type="primary",
+                    key="download_idml_edit"
+                )
+        
+        with col2:
+            with open(st.session_state.output_paths['word'], 'rb') as f:
+                st.download_button(
+                    label="📝 Download Word Document",
+                    data=f.read(),
+                    file_name=Path(st.session_state.output_paths['word']).name,
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True,
+                    type="primary",
+                    key="download_word_edit"
+                )
+        
+        # === NAVIGATION ===
+        st.markdown("---")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("← Back to Report", use_container_width=True):
                 st.session_state.step = 3
                 st.rerun()
         
         with col2:
-            if st.button("Download →", type="primary"):
-                st.session_state.step = 3
+            if st.button("🔄 Translate Another File", use_container_width=True, key="translate_another_edit"):
+                st.session_state.step = 1
+                st.session_state.translation_complete = False
+                st.session_state.uploaded_file = None
+                st.session_state.output_paths = None
+                st.session_state.translations = []
                 st.rerun()
     
     st.markdown('</div>', unsafe_allow_html=True)
