@@ -755,11 +755,19 @@ elif st.session_state.step == 4:
                     import tempfile
                     import zipfile
                     temp_dir = tempfile.mkdtemp()
+                    
+                    # DEBUG: Verify temp_dir is a string
+                    st.write("DEBUG - temp_dir type:", type(temp_dir))
+                    st.write("DEBUG - temp_dir value:", temp_dir)
+                    
                     with zipfile.ZipFile(edited_idml, 'r') as zip_ref:
                         zip_ref.extractall(temp_dir)
                     
                     # Generate Word document output path
                     word_output_path = edited_idml.replace('.idml', '.docx').replace('_edited', '_edited')
+                    
+                    # DEBUG: Verify word_output_path
+                    st.write("DEBUG - word_output_path:", word_output_path)
                     
                     # Create Word document from extracted IDML
                     from word_generator import create_word_document
